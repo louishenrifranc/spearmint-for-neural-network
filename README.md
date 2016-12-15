@@ -1,37 +1,56 @@
 # Spearmint optimizer for MLP neural networks
-* Search best architecture for standart Dense neural network
-* Find the best hidden size, l1 regularization, l2 regularization, dropout probability, non linearity for every layer
-* Set default values for every layer, or for each layer
+* Search best hyperparameter for standart Dense neural network
+* Learn any hyperparameter of any layers, or set it a default value.
+* Using only protobuf file, and json files
 
 # Dependencies
 * lasagne, numpy, theano, cPickle, spearmint
 
 # Optimization variables
-For every layers, you can set/learn this hyperparameters:
-* l1 regularization coefficient
-* l2 regularization coefficient
-* dropout coefficient
-* set batch norm or not
-* dropout coefficient
-* non linearities in ['relu', 'tanh']
-* number of hiddens
+Each layer in the neural network, from the first hidden, to the output one, has parameters that can be learned/pre-defined/shared with other layer as a global constant. A layer is defined as:
+```
+class Layer:
+	"""
+	Params
+	------	
+	l1_reg: float
+		l1 regularization coefficient	
+	l2 reg: float
+		l2 regularization coefficient
+	drop_p: float (between 0 and 1)
+		dropout probablity
+	batch_norm: boolean ("Yes", "False")
+		batch normalize, or not, before activation
+	non linearity: string ("relu", "tanh")
+		activation function 
+	number of hiddens: integer
+		number of hidden neurons
+	# more to come
+``` 
 
 # Usage
-No need to modify the code. Just create three files  
-1). Create a _config.pb_ file. Create an entry for every hyperparameters that Spearmint need to search. Notice that the size of every parameters must be the same, because every hyperparameters will be applied on every layer:
+No need to modify the code. Just modify three files	
+
+## Create a _config.pb_ file. 
+Create an entry for every hyperparameters that you want _Spearmint_ to learn. Make sure the size parameter is the umber of layers
 ```{python}
+# Example for the l2_reg parameter
 variable {
     name = "l2_reg" 
     type = FLOAT
-    size = 3 # one l2_reg will be learned for every layer
+    size = 3 # number of layers = 3
     min = 0
     max = 100
 }
 #### TODO : possibility of share same value at each layer, and learn globally, if it is usefull ?
+``` 
 
-```   
 
-2). Create a _priors.json_ file, where you can set for every layers, a predefined value for every hyperparameter. If this hyperparamer is already in the spearmint config file, it will be overwritten, and config.pb will be rewritten, to decrease the _size_ parameter of this hyperparameters.
+## Create a _priors.json_ file.
+Every parameter of any Layer, can be set to a predefined value, even if it was supposed to be learned by _Spearmint_. __Unless the number of hiddens is a learned parameters, make sure to set its value. If you don't, a default value with be affected to every layer__. 
+1. "layer_nb" : the layers depth, started at 0
+2. "properties" : you can set every parameter from the _Layer_ object.
+#### Example
 ```{json}
 {
   "layers": [
@@ -42,10 +61,12 @@ variable {
       }
     }
 }
-```
 
-3). Run the script __python parser.py__. It will modify the config.file based on priors.json file.  
-4). If you didn't mention an hyperparameters that is learnable, you can set it a default value, that will be applied to every layer. Set default values in _default.json_. If you haven't defined the size of your network in _2._, a default value will be applied.
+## Run the script __python parser.py__. 
+It will modify the config.file based on priors.json file.
+
+## Create a __default.json file__
+If a parameter of a layer is not to learn neither manually set at any depth, give it a default value, in this file.
 ```{json}
 {
   "non_linearity": "relu",
@@ -55,10 +76,8 @@ variable {
   "dropout": 0.2,
   "batch_norm": "True"
 }
-#### TODO add the possibility to choose a default depth if 1,2,3 hasn't be done.
 ```
 
-5). Run the model with spearmint. You only need to pass it _config.pb_
+## Run spearmint over the model with spearmint. You only need to pass it _config.pb_
 #### TODO add parser for input_size, number of epochs, and batch size.
-
 
