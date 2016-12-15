@@ -3,41 +3,25 @@ name:     "model"
 
 
 variable {
-    name = "l1_reg"
-    type = FLOAT
-    size = 0
-    min = 0
-    max = 100
+    name : "l1_reg"
+    type : FLOAT
+    size : 3
+    min : 0
+    max : 100
 }
 
 variable {
-    name = "l2_reg"
-    type = FLOAT
-    size = 1
-    min = 0
-    max = 100
+    name : "l2_reg"
+    type : FLOAT
+    size : 3
+    min : 0
+    max : 100
 }
 
 variable {
-    name = "dropout"
-    type = FLOAT
-    size = 3
-    min = 0
-    max = 1
-}
-
-variable {
-    name = "batch_norm"
-    type = ENUM
-    size = 3
-    options = "True"
-    options = "False"
-}
-
-variable {
-    name = "non_linearity"
-    type = ENUM
-    size = 3
-    options = "relu"
-    options = "tanh"
+    name : "dropout"
+    type : FLOAT
+    size : 3
+    min : 0
+    max : 1
 }

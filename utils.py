@@ -5,6 +5,7 @@ from sklearn.preprocessing import StandardScaler
 import theano
 import lasagne.nonlinearities
 import json
+import os
 
 
 def load_dataset():
@@ -12,7 +13,7 @@ def load_dataset():
     # X = cPickle.load(f)
     # y = cPickle.load(f)
     # f.close()
-    X, y = cPickle.load(open('dataLouis.pickle', 'rb'))
+    X, y = cPickle.load(open(get_relative_filename('dataLouis.pickle'), 'rb'))
     nb_example = len(X)
 
     s1 = int(0.6 * nb_example)
@@ -147,7 +148,11 @@ def get_shared(name, n_in, n_out, borrow=True):
     return theano.shared(get_weights(name, n_in, n_out).astype(get_dtype()), borrow=borrow)
 
 
-def get_nn_parameters(filename='data/global_nn_parameters.json'):
+def get_relative_filename(filename):
+    return os.path.join(os.path.dirname(__file__), filename)
+
+
+def get_nn_parameters(filename=get_relative_filename('data/global_nn_parameters.json')):
     """
     Return neural network attributes in a dic
     Parameters

@@ -1,13 +1,12 @@
-import theano
 import theano.tensor as T
-from lasagne.layers import InputLayer, get_output, get_all_params, batch_norm
+from lasagne.layers import InputLayer, get_output, get_all_params
 from lasagne.objectives import squared_error
-from lasagne.updates import adadelta
 import time
 from utils import *
 from Layer import Layer
 import json
 from network_repr import *
+import os
 
 
 class NN():
@@ -26,7 +25,6 @@ class NN():
         l1 = 0
         l2 = 0
 
-        model = {}
         model = InputLayer((self.BATCH_SIZE, self.N_IN), input_var=self.X)
         for layer in layers:
             model, l1, l2 = layer.build_layer(model, l1, l2)
@@ -88,23 +86,17 @@ class NN():
 
 
 def main(job_id=None, params=None):
-    params = {
-        'l2_reg': [1.0],
-        'l1_reg': [],
-        'dropout': [0.1, 0.2, 0],
-        'batch_norm': ["Yes", "False", "No"],
-        'non_linearity': ['relu', 'relu', 'relu'],
-        'n_hiddens': []
-    }
 
-    priors = json.load(open('data/layers_specific_parameters_value.json', 'rb'))
+
+    priors = json.load(
+        open(get_relative_filename('data/layers_specific_parameters_value.json'), 'rb'))
     priors = priors['layers']
 
     max_depth = 0
+
     max_depth = max(max(len(params[param]) for param in params), len(priors))
     layers = []
     indexes = {}
-
     for depth in xrange(max_depth):
         layer_info = {}
         for param in params:
@@ -124,13 +116,14 @@ def main(job_id=None, params=None):
                         indexes[param] -= 1
 
         layer_info['name'] = 'l' + str(depth)
-        layers.append(Layer(layer_info))
 
+        layers.append(Layer(layer_info))
+    for layer in layers:
+        print(str(layer))
     parameters = get_nn_parameters()
     nn = NN(layers, parameters)
-    nn.train()
-    return
+    return nn.train()
 
 
 if __name__ == '__main__':
-    main()
+    print(main())

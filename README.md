@@ -78,7 +78,19 @@ If a parameter of a layer is not to learn neither manually set at any depth, giv
 }
 ```
 
-## Create a __nn
+## Modify global parameters, such as n_epochs, n_inputs, batchsize, optimizer
+
+## Run spearmint
+* Run spearmint from the spearmint bin/ folder with the command:
+```{bash}
+./spearmint ../examples/path_to_project_folder/config.pb  --driver=local --method=GPEIChooser --method-args=noiseless=0 --max-concurrent=2
+```
+* Cleanup the project folder
+```{bash}
+./spearmint ../examples/path_to_project_folder
+```
+More info on ![spearmint github page](https://github.com/JasperSnoek/spearmint)
+
 ## Run spearmint over the model with spearmint. You only need to pass it _config.pb_
 #### TODO add parser for input_size, number of epochs, and batch size.
 
