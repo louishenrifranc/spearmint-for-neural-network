@@ -2,7 +2,7 @@ import cPickle
 import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-
+import theano.shared
 def load_dataset():
     # f = open('dataLouis.pickle', 'rb')
     # X = cPickle.load(f)

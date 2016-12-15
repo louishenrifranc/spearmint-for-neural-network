@@ -20,7 +20,7 @@ class NN():
         self.X = T.fmatrix('x').astype('int8')
         self.Y = T.fvector('y')
         self.N_IN = n_in
-        self.N_EPOCH = 100
+        self.N_EPOCH = n_epoch
         l1 = T.scalar('l1')
         l2 = T.scalar('l2')
 
@@ -75,10 +75,8 @@ class NN():
 
 
 def main(job_id, params):
-    l1 = params['l1']
-    # l2 = params['l2']
-    n_components = params['n_comps'][0]
-    return pca_reduction(n_components)
+    prior_values = cPickle.load(open('data/priors.p', 'rb'))
+
 
 
 if __name__ == '__main__':
