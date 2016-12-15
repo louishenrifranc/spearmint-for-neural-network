@@ -6,6 +6,7 @@ from lasagne.updates import adadelta
 import time
 from utils import *
 import Layer
+import json
 
 
 class NN():
@@ -76,28 +77,37 @@ class NN():
         return test_err / n_test_batches
 
 
-def set_var(layer, params, name, index, prior_value):
+def set_var(layer, params, name, index, prior_values):
     layer[name] = params[name][index]
-    if name in prior_value:
-        if prior_value[name][index] != None:
-            layer[name] = prior_value[name][index]
+    for l in xrange(len(prior_values)):
+        if prior_values[l]['layer_nb'] == index:
+            if name in prior_values[l]['properties']:
+                layer[name] = prior_values[l]['properties'][name]
     return layer
 
 
 def main(job_id, params):
-    prior_values = cPickle.load(open('data/priors.p', 'rb'))
-    # Just to get the depth of the neural network
+    priors = json.load(open('data/priors.json', 'rb'))
+    priors = priors['layers']
+
     max_depth = 0
-    for param in prior_values:
-        max_depth = len(param)
-        break
-    if max_depth == 0:
-        max_depth = max(len(param) for param in params)
+    max_depth = max(max(len(param) for param in params), len(priors['layers']))
     layers = []
-    for index in max_depth:
+    indexes = {}
+
+    for depth in max_depth:
         layer_info = {}
         for param in params:
-            set_var(layer_info, params, param, index, prior_values)
+            if not param in indexes:
+                indexes[param] = 0
+            layer_info[param] = params[param][indexes[param]]
+            indexes[param] += 1
+        for layer in xrange(len(priors)):
+            if priors[layer]['layer_nb'] == depth:
+                for param in priors[layer]['properties']:
+                    layer_info[param] = priors[layer]['properties'][param]
+                    if param in indexes:
+                        indexes[param] -= 1
         layer_info['name'] = index
         layers.append(Layer(layer_info))
 

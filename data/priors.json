@@ -1,14 +1,14 @@
 {
   "layers": [
     {
-      "nb_layer": "1",
+      "layer_nb": 1,
       "properties": {
         "n_hiddens": 10,
         "l1_reg": 0.01
       }
     },
     {
-      "nb_layer": "2",
+      "layer_nb": 2,
       "properties": {
         "l2_reg": 0.3,
         "l1_reg": 0.1

@@ -1,4 +1,5 @@
 import cPickle
+import json
 
 yes = set(['yes', 'y', 'ye', ''])
 no = set(['no', 'n'])
@@ -19,7 +20,8 @@ class Parser(object):
         """
         self.config = open(old_filename, 'rb')
         self.new_config = open(new_filename, 'wb')
-        self.dic = {}
+        self.priors = json.load(open('data/priors.json', 'rb'))
+        self.priors = self.priors['layers']
         # While there is line to read
         self.create_lines()
         index = 0
@@ -41,12 +43,6 @@ class Parser(object):
                     if any(x in line.split() for x in ['name', 'name=']):
                         # get its name without the \" \"
                         name = line.split()[-1][1:-1]
-                        choice = -1
-                        while choice == -1:
-                            print('Do you want to modify any of the variable in enumerate %s?' % name)
-                            choice = self.get_choice()
-                        if choice == 0:
-                            break
 
                     # get the size of the variable
                     if any(x in line.split() for x in ['size', 'size=']):
@@ -55,7 +51,7 @@ class Parser(object):
                         # get the size
                         size = int(line.split()[-1])
                         # modify the dictionnary, and the line
-                        dic, line = self.modify_variable(self.dic, name, size, line)
+                        line = self.modify_variable(name, size, line)
                     # append a return to the file
                     if line[-1] != '\n':
                         line += '\n'
@@ -64,33 +60,18 @@ class Parser(object):
                 self.new_config.write(line)
         self.new_config.close()
         self.config.close()
-        cPickle.dump(dic, open('data/priors.p', 'wb'))
 
-    def modify_variable(self, dic, name_var, size, line):
+    def modify_variable(self, name_var, size, line):
         # for all variable in the list
-        dic[name_var] = list()
-        for index in xrange(size):
-            choice = -1
-            while choice == -1:
-                print('Do you want to modify variable at index %d in enumerate %s?' % (index, name_var))
-                choice = self.get_choice()
-            if choice == 0:
-                dic[name_var].append(None)
-            else:
-                choice = -1
-                while choice != 1:
-                    print('What value do you want to give to the %d value in the enumerate of %s' % (index, name_var))
-                    val = raw_input().lower()
-                    print('Are you sure about giving this value: ' + str(val) + '?')
-                    choice = self.get_choice()
-                dic[name_var].append(val)
-
-        line.strip()
+        nb_var_predefined = 0
+        for layer in self.priors:
+            if name_var in layer['properties']:
+                nb_var_predefined += 1
         if line[-1] == '\n':
             line = line[:-1]
         nb_elements_power_of_ten = len(line.split()[-1])
-        line = line[:-(nb_elements_power_of_ten)] + str(dic[name_var].count(None))
-        return dic, line
+        line = line[:-(nb_elements_power_of_ten)] + str(nb_var_predefined)
+        return line
 
     def check_if_name_is_first(self, name):
         if name == "":
