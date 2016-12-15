@@ -3,7 +3,7 @@
     {
       "layer_nb": 1,
       "properties": {
-        "n_hiddens": 10,
+        "n_hiddens": 300,
         "l1_reg": 0.01
       }
     },
@@ -11,7 +11,8 @@
       "layer_nb": 2,
       "properties": {
         "l2_reg": 0.3,
-        "l1_reg": 0.1
+        "l1_reg": 0.1,
+        "n_hiddens": 200
       }
     }
   ]

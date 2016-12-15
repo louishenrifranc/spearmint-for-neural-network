@@ -2,8 +2,9 @@ import cPickle
 import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-import theano.shared
+import theano
 import lasagne.nonlinearities
+
 
 def load_dataset():
     # f = open('dataLouis.pickle', 'rb')
@@ -50,7 +51,7 @@ def get_weights(name, n_in, n_out=None):
         Initialization name
     n_in: int
         Number of rows
-    n_out: int
+    n_out: int (default None for biais only)
         Number of columns
     :return: a np.array
     """
@@ -71,7 +72,30 @@ def get_weights(name, n_in, n_out=None):
         raise 'Unsupported weigh init %s' % name
 
 
-def get_nonlinearity(name='tanh'):
+def get_optimizer(name, loss, params, lr):
+    '''
+    Get a lasagne optimizer object
+    Parameters
+    ----------
+    name: string
+        Name of the optimizer
+    loss:
+        Loss function to minimize
+    params:
+        Params to updates
+    :param lr: scalar or theano.tensor.scalar
+        Learning rate
+    :return: a lasagne.updates
+    '''
+    if name == "adadelta":
+        return lasagne.updates.adadelta(loss, params)
+    elif name == "adagrad":
+        return lasagne.updates.adagrad(loss, params, learning_rate=lr)
+    elif name == "rmsprop":
+        return lasagne.updates.rmsprop(loss, params, learning_rate=lr)
+
+
+def get_nonlinearity(name):
     '''
     Get a lasagne nonlinearities object
     Parameters
@@ -84,6 +108,10 @@ def get_nonlinearity(name='tanh'):
         return lasagne.nonlinearities.rectify
     elif name == "tanh":
         return lasagne.nonlinearities.tanh
+    elif name == "sigmoid":
+        return lasagne.nonlinearities.sigmoid
+    elif name == "linear":
+        return lasagne.nonlinearities.linear
     else:
         raise 'Unsupported activation function %s' % name
 

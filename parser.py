@@ -1,10 +1,15 @@
 import json
+import os
 
 yes = set(['yes', 'y', 'ye', ''])
 no = set(['no', 'n'])
 
 
 class Parser(object):
+    """
+    Parse config.pb and modify it with respect to the value in the priors.json
+    """
+
     def __init__(self,
                  old_filename='config.pb',
                  new_filename='config_new.pb'):
@@ -49,6 +54,8 @@ class Parser(object):
                         self.check_if_name_is_first(name)
                         # get the size
                         size = int(line.split()[-1])
+                        # check if the user has no forgot to define a layer. Raise only warning
+                        self.check_if_nb_layers_match(size)
                         # modify the dictionnary, and the line
                         line = self.modify_variable(name, size, line)
                     # append a return to the file
@@ -60,6 +67,11 @@ class Parser(object):
         self.new_config.close()
         self.config.close()
 
+        temp_file = 'temp_file_name'
+        os.rename(new_filename, temp_file)
+        os.rename(old_filename, new_filename)
+        os.rename(temp_file, old_filename)
+
     def modify_variable(self, name_var, size, line):
         # for all variable in the list
         nb_var_predefined = 0
@@ -69,12 +81,21 @@ class Parser(object):
         if line[-1] == '\n':
             line = line[:-1]
         nb_elements_power_of_ten = len(line.split()[-1])
-        line = line[:-(nb_elements_power_of_ten)] + str(nb_var_predefined)
+        line = line[:-(nb_elements_power_of_ten)] + str(size - nb_var_predefined)
         return line
+
+    def check_if_nb_layers_match(self, size):
+        if size > len(self.priors):
+            raise UserWarning(
+                'More layers defined in config.pb than in priors.json. \
+                All undefined layers in priors.json will take default parameter')
+        elif size < len(self.priors):
+            raise UserWarning('More layers defined in priors.json than in config.pb \
+                              Is this trully what you want? ')
 
     def check_if_name_is_first(self, name):
         if name == "":
-            raise 'please specify variable name before any parameters'
+            raise SyntaxError('For every variable in config.pb, set the name before the size')
 
     def get_choice(self):
         choice = raw_input().lower()
