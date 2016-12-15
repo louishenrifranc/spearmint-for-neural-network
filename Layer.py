@@ -1,23 +1,26 @@
 from lasagne.layers import DenseLayer, DropoutLayer, batch_norm
 from lasagne.regularization import regularize_layer_params_weighted, l1, l2
+import utils
+import json
 
 
 class Layer(object):
     def __init__(self,
-                 non_linearity,
-                 n_hidden,
-                 l1_reg,
-                 l2_reg,
-                 dropout_p,
-                 batch_norm,
-                 name):
-        self.non_linearity = non_linearity
-        self.n_hidden = n_hidden
-        self.l1_reg = l1_reg
-        self.l2_reg = l2_reg
-        self.dropout_p = dropout_p
-        self.batch_norm = batch_norm
-        self.name = name
+                 layers_info):
+        self.default_values = json.load(open('data/default_value.json', 'rb'))
+        self.non_linearity = self.get_attribute('non_linearity', layers_info)
+        self.n_hidden = self.get_attribute('n_hiddens', layers_info)
+        self.l1_reg = self.get_attribute('l1_reg', layers_info)
+        self.l2_reg = self.get_attribute('l2_reg', layers_info)
+        self.dropout_p = self.get_attribute('dropout', layers_info)
+        self.batch_norm = self.get_attribute('batch_norm', layers_info)
+        self.name = self.get_attribute('name', layers_info)
+
+    def get_attribute(self, name, layers_info):
+        if name in layers_info:
+            return layers_info[name]
+        else:
+            return self.default_values[name]
 
     def name(self):
         return self.name
@@ -43,7 +46,7 @@ class Layer(object):
     def build_layer(self, model, all_l1_regs, all_l2_regs):
         model[self.name + '_hid'] = DenseLayer(model[:-1],
                                                num_units=self.n_hidden,
-                                               nonlinearity=self.non_linearity)
+                                               nonlinearity=utils.get_nonlinearity(self.non_linearity))
         if self.l1_reg != 0:
             all_l1_regs += regularize_layer_params_weighted({model[:-1]: self.l1_reg}, l1)
 

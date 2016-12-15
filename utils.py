@@ -3,6 +3,8 @@ import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 import theano.shared
+import lasagne.nonlinearities
+
 def load_dataset():
     # f = open('dataLouis.pickle', 'rb')
     # X = cPickle.load(f)
@@ -33,7 +35,6 @@ def pca_reduction(nb_components):
     cPickle.dump(y, f)
     f.close()
     return pca.explained_variance_ratio_
-
 
 
 def get_dtype():
@@ -70,6 +71,22 @@ def get_weights(name, n_in, n_out=None):
         raise 'Unsupported weigh init %s' % name
 
 
+def get_nonlinearity(name='tanh'):
+    '''
+    Get a lasagne nonlinearities object
+    Parameters
+    ----------
+    name: string (default : tanh)
+        Nonlinearity function
+    :return: a lasagne.nonlinearities
+    '''
+    if name == "relu":
+        return lasagne.nonlinearities.rectify
+    elif name == "tanh":
+        return lasagne.nonlinearities.tanh
+    else:
+        raise 'Unsupported activation function %s' % name
+
 
 def iterate_minibatches(inputs, outputs, batchsize, shuffle=False):
     if shuffle:
@@ -81,7 +98,6 @@ def iterate_minibatches(inputs, outputs, batchsize, shuffle=False):
         else:
             excerpt = slice(start_idx, start_idx + batchsize)
         yield inputs[excerpt], outputs[excerpt]
-
 
 
 def get_shared(name, n_in, n_out, borrow=True):

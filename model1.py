@@ -5,12 +5,13 @@ from lasagne.objectives import squared_error
 from lasagne.updates import adadelta
 import time
 from utils import *
+import Layer
 
 
 class NN():
     def __init__(self,
-                 n_in,
                  layers,
+                 n_in,
                  n_epoch=100,
                  batch_size=16,
                  ):
@@ -72,11 +73,37 @@ class NN():
             n_test_batches += 1
         print("Final results:")
         print("  test loss:\t\t\t{:.6f}".format(test_err / n_test_batches))
+        return test_err / n_test_batches
+
+
+def set_var(layer, params, name, index, prior_value):
+    layer[name] = params[name][index]
+    if name in prior_value:
+        if prior_value[name][index] != None:
+            layer[name] = prior_value[name][index]
+    return layer
 
 
 def main(job_id, params):
     prior_values = cPickle.load(open('data/priors.p', 'rb'))
+    # Just to get the depth of the neural network
+    max_depth = 0
+    for param in prior_values:
+        max_depth = len(param)
+        break
+    if max_depth == 0:
+        max_depth = max(len(param) for param in params)
+    layers = []
+    for index in max_depth:
+        layer_info = {}
+        for param in params:
+            set_var(layer_info, params, param, index, prior_values)
+        layer_info['name'] = index
+        layers.append(Layer(layer_info))
 
+    nn = NN(layers)
+    nn.train()
+    return
 
 
 if __name__ == '__main__':
