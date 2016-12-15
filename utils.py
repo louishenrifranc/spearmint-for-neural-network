@@ -4,6 +4,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 import theano
 import lasagne.nonlinearities
+import json
 
 
 def load_dataset():
@@ -19,7 +20,7 @@ def load_dataset():
     X_train, y_train = X[:s1, ], y[:s1]
     X_val, y_val = X[s1:s2, ], y[s1:s2]
     X_test, y_test = X[s2:, ], y[s2:]
-    print(len(X_test[0]))
+
     return X_train, y_train, X_val, y_val, X_test, y_test
 
 
@@ -72,7 +73,7 @@ def get_weights(name, n_in, n_out=None):
         raise 'Unsupported weigh init %s' % name
 
 
-def get_optimizer(name, loss, params, lr):
+def get_optimizer(name, loss, params, lr, decay_lr):
     '''
     Get a lasagne optimizer object
     Parameters
@@ -92,7 +93,7 @@ def get_optimizer(name, loss, params, lr):
     elif name == "adagrad":
         return lasagne.updates.adagrad(loss, params, learning_rate=lr)
     elif name == "rmsprop":
-        return lasagne.updates.rmsprop(loss, params, learning_rate=lr)
+        return lasagne.updates.rmsprop(loss, params, learning_rate=lr, rho=decay_lr)
 
 
 def get_nonlinearity(name):
@@ -144,3 +145,19 @@ def get_shared(name, n_in, n_out, borrow=True):
     :return: a theano.shared
     """
     return theano.shared(get_weights(name, n_in, n_out).astype(get_dtype()), borrow=borrow)
+
+
+def get_nn_parameters(filename='data/global_nn_parameters.json'):
+    """
+    Return neural network attributes in a dic
+    Parameters
+    ----------
+    filename: string (default: data/global_nn_parameters.json)
+        file containing the attributes of the neural network
+
+    :return: a dict containing the optimizer,
+                             the batch size,
+                             the number of input,
+                             the learning rate
+    """
+    return json.load(open(filename, 'rb'))

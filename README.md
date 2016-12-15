@@ -78,6 +78,7 @@ If a parameter of a layer is not to learn neither manually set at any depth, giv
 }
 ```
 
+## Create a __nn
 ## Run spearmint over the model with spearmint. You only need to pass it _config.pb_
 #### TODO add parser for input_size, number of epochs, and batch size.
 

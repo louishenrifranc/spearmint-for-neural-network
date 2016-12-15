@@ -1,17 +1,11 @@
 language: PYTHON
 name:     "model"
 
-variable{
-    name = "n_hiddens"
-    type = FLOAT
-    size = 3
-    min = 0
-    max = 100
-}
+
 variable {
     name = "l1_reg"
     type = FLOAT
-    size = 3
+    size = 0
     min = 0
     max = 100
 }
@@ -19,7 +13,7 @@ variable {
 variable {
     name = "l2_reg"
     type = FLOAT
-    size = 3
+    size = 1
     min = 0
     max = 100
 }

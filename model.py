@@ -5,43 +5,45 @@ from lasagne.objectives import squared_error
 from lasagne.updates import adadelta
 import time
 from utils import *
-import Layer
+from Layer import Layer
 import json
+from network_repr import *
 
 
 class NN():
     def __init__(self,
                  layers,
-                 n_in,
-                 n_epoch=100,
-                 batch_size=16,
+                 parameters,
                  ):
 
         # PLACEHOLDERS and MODEL PARAMETERS
-        self.BATCH_SIZE = batch_size
+        self.BATCH_SIZE = parameters['batch_size']
+        self.N_IN = parameters['n_in']
+        self.N_EPOCH = parameters['n_epochs']
+
         self.X = T.fmatrix('x').astype('int8')
         self.Y = T.fvector('y')
-        self.N_IN = n_in
-        self.N_EPOCH = n_epoch
-        l1 = T.scalar('l1')
-        l2 = T.scalar('l2')
+        l1 = 0
+        l2 = 0
 
         model = {}
-        model['l_in'] = InputLayer((self.BATCH_SIZE, self.N_IN), input_var=self.X)
+        model = InputLayer((self.BATCH_SIZE, self.N_IN), input_var=self.X)
         for layer in layers:
-            model = layer.build_layer(model, l1, l2)
+            model, l1, l2 = layer.build_layer(model, l1, l2)
 
-        model['l_out'] = model[:-1]
-        Y_hat = get_output(model['l_out'], deterministic=False)
-        Y_test = get_output(model['l_out'], deterministic=True)
+        # print(get_network_str(model))
+        Y_hat = get_output(model, deterministic=False)
+        Y_test = get_output(model, deterministic=True)
 
-        all_params = get_all_params(model['l_out'], trainable=True)
+        all_params = get_all_params(model, trainable=True)
         cost = T.mean(squared_error(self.Y, T.reshape(Y_hat, (Y_hat.shape[0],))), axis=0)
-        loss = cost + l1 + l2
-        updates = adadelta(loss, all_params)
+        loss = l1 + l2 + cost
+        updates = get_optimizer(parameters['optimizer'], loss, all_params, parameters['lr'], parameters['decay_lr'])
 
-        self.train_fn = theano.function(inputs=[self.X, self.Y], outputs=[loss], updates=updates)
-        self.test_fn = theano.function(inputs=[self.X, self.Y], outputs=[cost])
+        self.train_fn = theano.function(inputs=[self.X, self.Y], outputs=[loss], updates=updates,
+                                        allow_input_downcast=True, on_unused_input='ignore')
+        self.test_fn = theano.function(inputs=[self.X, self.Y], outputs=[cost],
+                                       allow_input_downcast=True, on_unused_input='ignore')
 
     def train(self):
         X_train, y_train, X_val, y_val, X_test, y_test = load_dataset()
@@ -76,46 +78,59 @@ class NN():
         print("  test loss:\t\t\t{:.6f}".format(test_err / n_test_batches))
         return test_err / n_test_batches
 
+    def set_var(layer, params, name, index, prior_values):
+        layer[name] = params[name][index]
+        for l in xrange(len(prior_values)):
+            if prior_values[l]['layer_nb'] == index:
+                if name in prior_values[l]['properties']:
+                    layer[name] = prior_values[l]['properties'][name]
+        return layer
 
-def set_var(layer, params, name, index, prior_values):
-    layer[name] = params[name][index]
-    for l in xrange(len(prior_values)):
-        if prior_values[l]['layer_nb'] == index:
-            if name in prior_values[l]['properties']:
-                layer[name] = prior_values[l]['properties'][name]
-    return layer
 
+def main(job_id=None, params=None):
+    params = {
+        'l2_reg': [1.0],
+        'l1_reg': [],
+        'dropout': [0.1, 0.2, 0],
+        'batch_norm': ["Yes", "False", "No"],
+        'non_linearity': ['relu', 'relu', 'relu'],
+        'n_hiddens': []
+    }
 
-def main(job_id, params):
-    priors = json.load(open('data/priors.json', 'rb'))
+    priors = json.load(open('data/layers_specific_parameters_value.json', 'rb'))
     priors = priors['layers']
 
     max_depth = 0
-    max_depth = max(max(len(param) for param in params), len(priors['layers']))
+    max_depth = max(max(len(params[param]) for param in params), len(priors))
     layers = []
     indexes = {}
 
-    for depth in max_depth:
+    for depth in xrange(max_depth):
         layer_info = {}
         for param in params:
-            if not param in indexes:
-                indexes[param] = 0
-            layer_info[param] = params[param][indexes[param]]
-            indexes[param] += 1
+            if len(params[param]) > 0:
+                if not param in indexes:
+                    indexes[param] = 0
+                if indexes[param] < len(params[param]) and indexes[param] >= 0:
+                    layer_info[param] = params[param][indexes[param]]
+                    indexes[param] += 1
+                else:
+                    indexes[param] = -1
         for layer in xrange(len(priors)):
             if priors[layer]['layer_nb'] == depth:
                 for param in priors[layer]['properties']:
                     layer_info[param] = priors[layer]['properties'][param]
                     if param in indexes:
                         indexes[param] -= 1
-        layer_info['name'] = index
+
+        layer_info['name'] = 'l' + str(depth)
         layers.append(Layer(layer_info))
 
-    nn = NN(layers)
+    parameters = get_nn_parameters()
+    nn = NN(layers, parameters)
     nn.train()
     return
 
 
 if __name__ == '__main__':
-    nn = NN()
-    nn.train()
+    main()

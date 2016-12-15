@@ -7,7 +7,7 @@ no = set(['no', 'n'])
 
 class Parser(object):
     """
-    Parse config.pb and modify it with respect to the value in the priors.json
+    Parse config.pb and modify it with respect to the value in the layers_specific_parameters_value.json
     """
 
     def __init__(self,
@@ -24,7 +24,7 @@ class Parser(object):
         """
         self.config = open(old_filename, 'rb')
         self.new_config = open(new_filename, 'wb')
-        self.priors = json.load(open('data/priors.json', 'rb'))
+        self.priors = json.load(open('data/layers_specific_parameters_value.json', 'rb'))
         self.priors = self.priors['layers']
         # While there is line to read
         self.create_lines()
@@ -38,6 +38,7 @@ class Parser(object):
             # If we read the beginning of a variable file
             if any(x in line.split() for x in ['variable', 'variable{']):
                 name = ""
+                self.new_config.write(line)
                 while line.split()[0] != '}':
                     line = self.get_next_line(index)
                     if line == None:
@@ -87,11 +88,11 @@ class Parser(object):
     def check_if_nb_layers_match(self, size):
         if size > len(self.priors):
             raise UserWarning(
-                'More layers defined in config.pb than in priors.json. \
-                All undefined layers in priors.json will take default parameter')
+                'More layers defined in config.pb than in layers_specific_parameters_value.json. \
+                All undefined layers in layers_specific_parameters_value.json will take default parameter')
         elif size < len(self.priors):
-            raise UserWarning('More layers defined in priors.json than in config.pb \
-                              Is this trully what you want? ')
+            raise UserWarning('More layers defined in layers_specific_parameters_value.json than in config.pb \
+                              Is this truly what you want? ')
 
     def check_if_name_is_first(self, name):
         if name == "":
