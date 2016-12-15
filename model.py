@@ -71,7 +71,7 @@ class NN():
         test_err = 0
         n_test_batches = 0
         for X_batch_test in iterate_minibatches(X_test, y_test, self.BATCH_SIZE, shuffle=False):
-            err = self.test_fn(X_batch_test)
+            err = self.test_fn(X_batch_test[0], X_batch_test[1])
             test_err += err[0]
             n_test_batches += 1
         print("Final results:")
