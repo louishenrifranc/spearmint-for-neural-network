@@ -1,4 +1,3 @@
-import cPickle
 import json
 
 yes = set(['yes', 'y', 'ye', ''])
