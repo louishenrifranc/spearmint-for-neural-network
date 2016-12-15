@@ -1,0 +1,9 @@
+{
+  "non_linearity": "relu",
+  "n_hiddens": 1000,
+  "l1_reg": 0.01,
+  "l2_reg": 0.02,
+  "dropout": 0.2,
+  "batch_norm": "True"
+}
+
