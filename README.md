@@ -61,7 +61,7 @@ Every parameter of any Layer, can be set to a predefined value, even if it was s
       }
     }
 }
-
+```
 ## Run the script __python parser.py__. 
 It will modify the config.file based on priors.json file.
 
