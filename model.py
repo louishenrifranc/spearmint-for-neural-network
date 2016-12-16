@@ -2,46 +2,39 @@ import theano.tensor as T
 from lasagne.layers import InputLayer, get_output, get_all_params
 from lasagne.objectives import squared_error
 import time
-from utils import *
-from Layer import Layer
-import json
-from network_repr import *
-import os
+from utils import get_optimizer, load_dataset, iterate_minibatches, get_layers, get_nn_parameters
+from theano import function
 
 
 class NN():
     def __init__(self,
                  layers,
-                 parameters,
-                 ):
+                 parameters):
 
-        # PLACEHOLDERS and MODEL PARAMETERS
         self.BATCH_SIZE = parameters['batch_size']
         self.N_IN = parameters['n_in']
         self.N_EPOCH = parameters['n_epochs']
 
         self.X = T.fmatrix('x').astype('int8')
         self.Y = T.fvector('y')
-        l1 = 0
-        l2 = 0
-
+        l1, l2 = 0, 0
         model = InputLayer((self.BATCH_SIZE, self.N_IN), input_var=self.X)
         for layer in layers:
             model, l1, l2 = layer.build_layer(model, l1, l2)
 
-        # print(get_network_str(model))
         Y_hat = get_output(model, deterministic=False)
         Y_test = get_output(model, deterministic=True)
 
         all_params = get_all_params(model, trainable=True)
         cost = T.mean(squared_error(self.Y, T.reshape(Y_hat, (Y_hat.shape[0],))), axis=0)
+        cost_test = T.mean(squared_error(self.Y, T.reshape(Y_test, (Y_test.shape[0],))), axis=0)
         loss = l1 + l2 + cost
         updates = get_optimizer(parameters['optimizer'], loss, all_params, parameters['lr'], parameters['decay_lr'])
 
-        self.train_fn = theano.function(inputs=[self.X, self.Y], outputs=[loss], updates=updates,
-                                        allow_input_downcast=True, on_unused_input='ignore')
-        self.test_fn = theano.function(inputs=[self.X, self.Y], outputs=[cost],
-                                       allow_input_downcast=True, on_unused_input='ignore')
+        self.train_fn = function(inputs=[self.X, self.Y], outputs=[loss], updates=updates,
+                                 allow_input_downcast=True, on_unused_input='ignore')
+        self.test_fn = function(inputs=[self.X, self.Y], outputs=[cost_test],
+                                allow_input_downcast=True, on_unused_input='ignore')
 
     def train(self):
         X_train, y_train, X_val, y_val, X_test, y_test = load_dataset()
@@ -86,9 +79,11 @@ class NN():
 
 
 def main(job_id=None, params=None):
-
-    # Get the layers from the config.pb file and the hardcoded value
+    # Get the layers
     layers = get_layers(params)
+    # Get neural network defined function
     parameters = get_nn_parameters()
+    # Build the neural network
     nn = NN(layers, parameters)
+    # Train the neural network
     return nn.train()

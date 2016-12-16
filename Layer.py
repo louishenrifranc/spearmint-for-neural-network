@@ -20,7 +20,7 @@ class Layer(object):
     def name(self):
         return self.name
 
-    def non_linerity(self):
+    def non_linearity(self):
         return self.non_linearity
 
     def n_hidden(self):
