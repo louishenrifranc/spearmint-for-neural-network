@@ -13,7 +13,7 @@ pip install -r requirements.txt
 pip install -r https://raw.githubusercontent.com/Lasagne/Lasagne/master/requirements.txt
 pip install https://github.com/Lasagne/Lasagne/archive/master.zip
 ```
-* Install spearmint ![spearmint github](https://github.com/JasperSnoek/spearmint)
+* Install spearmint ![info here](https://github.com/JasperSnoek/spearmint)
 
 # Optimization variables
 Each layer in the neural network has different hyperparameters from the number of hidden neuron to the l1 regularization applied on its weights.  
@@ -101,7 +101,7 @@ If a parameter of a layer is not to learn, and hadn't either be manually set, gi
 ```{bash}
 ./spearmint ../examples/path_to_project_folder
 ```
-More info about _Spearmint_ on ![spearmint github page](https://github.com/JasperSnoek/spearmint)
+More info about _Spearmint_ on ![here](https://github.com/JasperSnoek/spearmint)
 
 
 
