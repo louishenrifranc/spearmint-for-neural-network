@@ -2,7 +2,7 @@ import theano.tensor as T
 from lasagne.layers import InputLayer, get_output, get_all_params
 from lasagne.objectives import squared_error
 import time
-from utils import get_optimizer, load_dataset, iterate_minibatches, get_layers, get_nn_parameters
+from script.utils import get_optimizer, load_dataset, iterate_minibatches, get_layers, get_nn_parameters
 from theano import function
 
 
@@ -68,14 +68,6 @@ class NN():
         print("Final results:")
         print("  test loss:\t\t\t{:.6f}".format(test_err / n_test_batches))
         return test_err / n_test_batches
-
-    def set_var(layer, params, name, index, prior_values):
-        layer[name] = params[name][index]
-        for l in xrange(len(prior_values)):
-            if prior_values[l]['layer_nb'] == index:
-                if name in prior_values[l]['properties']:
-                    layer[name] = prior_values[l]['properties'][name]
-        return layer
 
 
 def main(job_id=None, params=None):
