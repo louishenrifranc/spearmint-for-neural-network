@@ -123,9 +123,11 @@ Functions:
 * get next batch
 ----------
 """
+
+
 def get_relative_filename(filename, data_folder='data/'):
     filename = data_folder + filename
-    return os.path.join(os.path.dirname(__file__),'..', filename)
+    return os.path.join(os.path.dirname(__file__), '..', filename)
 
 
 def load_dataset():
@@ -180,7 +182,7 @@ def get_layers(params):
     for depth in xrange(max_depth):
         # Set default values
         # Overwritten if defined in the .pb or .json file
-        layer_info = {name: value for name, value in default_values}
+        layer_info = {name: value for name, value in default_values.iteritems()}
 
         # Set values from the config file
         # Overwritten if defined in json file
@@ -204,7 +206,7 @@ def get_layers(params):
                     if param in indexes:
                         indexes[param] -= 1
 
-                    if indexes[param] == len(params[param]):
+                    if param in params and indexes[param] == len(params[param]):
                         indexes[param] = -1
         # Set the name
         layer_info['name'] = 'l' + str(depth)
@@ -215,8 +217,6 @@ def get_layers(params):
         print(str(layer))
 
     return layers
-
-
 
 
 def get_nn_parameters(filename=get_relative_filename('global_nn_parameters.json')):

@@ -2,8 +2,10 @@ import theano.tensor as T
 from lasagne.layers import InputLayer, get_output, get_all_params
 from lasagne.objectives import squared_error
 import time
-from script.utils import get_optimizer, load_dataset, iterate_minibatches, get_layers, get_nn_parameters
 from theano import function
+import sys
+
+from script.utils import get_optimizer, load_dataset, iterate_minibatches, get_layers, get_nn_parameters
 
 
 class NN():
@@ -93,3 +95,7 @@ def main(job_id=None, params=None):
     nn = NN(layers, parameters)
     # Train the neural network
     return nn.train()
+
+
+if __name__ == '__main__':
+    nn = NN((), ())
