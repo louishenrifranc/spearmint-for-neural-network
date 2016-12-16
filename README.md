@@ -52,6 +52,7 @@ variable {
     min = 0
     max = 100
 }
+```
 
 ## Create a _predefined_values.json_ file.
 Every parameter of any Layer, can be set to a value. It prevent _Spearmint_ to learn it. __Unless the number of hidden neurons is a parameter to learn, make sure to set it a value. If you don't, a default value from the default_values.json will be affected to every layer__.  
