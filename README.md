@@ -1,13 +1,23 @@
 # Spearmint optimizer for MLP neural networks
-* Search best hyperparameter for standart Dense neural network
-* Learn any hyperparameter of any layers, or set it a default value.
-* Using only protobuf file, and json files
+* Search best hyperparameters for neural network.
+* Find best hyperparameters for every dense layer in the neural network. Specify which parameter will be learned, and set the other a specific value.
+* No code, only json, and pb files
 
 # Dependencies
-* lasagne, numpy, theano, cPickle, spearmint
+* Install dependencies with pip
+```{bash}
+pip install -r requirements.txt
+```
+* Install Lasagne from github 
+```{bash}
+pip install -r https://raw.githubusercontent.com/Lasagne/Lasagne/master/requirements.txt
+pip install https://github.com/Lasagne/Lasagne/archive/master.zip
+```
+* Install spearmint ![spearmint github](https://github.com/JasperSnoek/spearmint)
 
 # Optimization variables
-Each layer in the neural network, from the first hidden, to the output one, has parameters that can be learned/pre-defined/shared with other layer as a global constant. A layer is defined as:
+Each layer in the neural network has different hyperparameters from the number of hidden neuron to the l1 regularization applied on its weights.  
+From the first hidden layer, up to the output layer,parameters can be learned/pre-defined (globally or indenpendantly). A layer is defined as:
 ```
 class Layer:
 	"""
@@ -29,10 +39,10 @@ class Layer:
 ``` 
 
 # Usage
-No need to modify the code. Just modify three files	
 
 ## Create a _config.pb_ file. 
-Create an entry for every hyperparameters that you want _Spearmint_ to learn. Make sure the size parameter is the umber of layers
+Create an entry for every hyperparameters that you want _Spearmint_ to learn. _Size_ parameter should be the depth of your neural network
+
 ```{python}
 # Example for the l2_reg parameter
 variable {
@@ -42,14 +52,14 @@ variable {
     min = 0
     max = 100
 }
-#### TODO : possibility of share same value at each layer, and learn globally, if it is usefull ?
-``` 
 
+## Create a _predefined_values.json_ file.
+Every parameter of any Layer, can be set to a value. It prevent _Spearmint_ to learn it. __Unless the number of hidden neurons is a parameter to learn, make sure to set it a value. If you don't, a default value from the default_values.json will be affected to every layer__.  
 
-## Create a _priors.json_ file.
-Every parameter of any Layer, can be set to a predefined value, even if it was supposed to be learned by _Spearmint_. __Unless the number of hiddens is a learned parameters, make sure to set its value. If you don't, a default value with be affected to every layer__. 
+#### How to structure your json file
 1. "layer_nb" : the layers depth, started at 0
 2. "properties" : you can set every parameter from the _Layer_ object.
+
 #### Example
 ```{json}
 {
@@ -62,11 +72,12 @@ Every parameter of any Layer, can be set to a predefined value, even if it was s
     }
 }
 ```
-## Run the script __python parser.py__. 
-It will modify the config.file based on priors.json file.
 
-## Create a __default.json file__
-If a parameter of a layer is not to learn neither manually set at any depth, give it a default value, in this file.
+## Run the script __parser.py__. 
+It will modify the config.file based on predefined_values.json file. Parser script is in the script folder
+
+## Create a __default_values.json file__
+If a parameter of a layer is not to learn, and hadn't either be manually set, give it a default value, in this file.
 ```{json}
 {
   "non_linearity": "relu",
@@ -78,7 +89,7 @@ If a parameter of a layer is not to learn neither manually set at any depth, giv
 }
 ```
 
-## Modify global parameters, such as n_epochs, n_inputs, batchsize, optimizer
+## Modify global parameters, such as n_epochs, n_inputs, batchsize, optimizer in __global_nn_parameters.json__
 
 ## Run spearmint
 * Run spearmint from the spearmint bin/ folder with the command:
@@ -89,7 +100,7 @@ If a parameter of a layer is not to learn neither manually set at any depth, giv
 ```{bash}
 ./spearmint ../examples/path_to_project_folder
 ```
-More info on ![spearmint github page](https://github.com/JasperSnoek/spearmint)
+More info about _Spearmint_ on ![spearmint github page](https://github.com/JasperSnoek/spearmint)
 
 
 
