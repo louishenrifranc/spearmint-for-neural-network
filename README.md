@@ -13,7 +13,7 @@ pip install -r requirements.txt
 pip install -r https://raw.githubusercontent.com/Lasagne/Lasagne/master/requirements.txt
 pip install https://github.com/Lasagne/Lasagne/archive/master.zip
 ```
-* Install spearmint ![info here](https://github.com/JasperSnoek/spearmint)
+* Install spearmint. More info ![here](https://github.com/JasperSnoek/spearmint)
 
 # Optimization variables
 Each layer in the neural network has different hyperparameters from the number of hidden neuron to the l1 regularization applied on its weights.  
@@ -25,15 +25,15 @@ class Layer:
 	------	
 	l1_reg: float
 		l1 regularization coefficient	
-	l2 reg: float
+	l2_reg: float
 		l2 regularization coefficient
 	drop_p: float (between 0 and 1)
 		dropout probablity
 	batch_norm: boolean ("Yes", "False")
 		batch normalize, or not, before activation
-	non linearity: string ("relu", "tanh")
+	non_linearity: string ("relu", "tanh")
 		activation function 
-	number of hiddens: integer
+	n_hidden: integer
 		number of hidden neurons
 	# more to come
 ``` 
@@ -82,7 +82,7 @@ If a parameter of a layer is not to learn, and hadn't either be manually set, gi
 ```{json}
 {
   "non_linearity": "relu",
-  "n_hiddens": 1000,
+  "n_hidden": 1000,
   "l1_reg": 0.01,
   "l2_reg": 0.02,
   "dropout": 0.2,
@@ -95,11 +95,11 @@ If a parameter of a layer is not to learn, and hadn't either be manually set, gi
 ## Run spearmint
 * Run spearmint from the spearmint bin/ folder with the command:
 ```{bash}
-./spearmint ../examples/path_to_project_folder/config.pb  --driver=local --method=GPEIChooser --method-args=noiseless=0 --max-concurrent=2
+./spearmint path_to_project_folder/config.pb  --driver=local --method=GPEIChooser --method-args=noiseless=0 --max-concurrent=2
 ```
 * Cleanup the project folder
 ```{bash}
-./spearmint ../examples/path_to_project_folder
+./cleanup path_to_project_folder
 ```
 More info about _Spearmint_ on ![here](https://github.com/JasperSnoek/spearmint)
 
