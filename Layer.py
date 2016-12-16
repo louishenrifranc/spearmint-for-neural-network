@@ -5,24 +5,17 @@ import json
 import os
 from utils import get_relative_filename
 
+
 class Layer(object):
     def __init__(self,
                  layers_info):
-        self.default_values = json.load(
-            open(get_relative_filename('data/default_parameters_value.json'), 'rb'))
-        self.non_linearity = self.get_attribute('non_linearity', layers_info)
-        self.n_hidden = self.get_attribute('n_hidden', layers_info)
-        self.l1_reg = self.get_attribute('l1_reg', layers_info)
-        self.l2_reg = self.get_attribute('l2_reg', layers_info)
-        self.dropout_p = self.get_attribute('dropout', layers_info)
-        self.batch_norm = self.get_attribute('batch_norm', layers_info)
-        self.name = self.get_attribute('name', layers_info)
-
-    def get_attribute(self, name, layers_info):
-        if name in layers_info:
-            return layers_info[name]
-        else:
-            return self.default_values[name]
+        self.non_linearity = layers_info['non_linearity']
+        self.n_hidden = layers_info['n_hidden']
+        self.l1_reg = layers_info['l1_reg']
+        self.l2_reg = layers_info['l2_reg']
+        self.dropout_p = layers_info['dropout']
+        self.batch_norm = layers_info['batch_norm']
+        self.name = layers_info['name']
 
     def name(self):
         return self.name
@@ -30,7 +23,7 @@ class Layer(object):
     def non_linerity(self):
         return self.non_linearity
 
-    def n_hiddens(self):
+    def n_hidden(self):
         return self.n_hidden
 
     def l1_reg(self):
@@ -39,7 +32,7 @@ class Layer(object):
     def l2_reg(self):
         return self.l2_reg
 
-    def dropout_probs(self):
+    def dropout_prob(self):
         return self.dropout_p
 
     def is_batch_norm(self):

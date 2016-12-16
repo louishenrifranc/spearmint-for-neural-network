@@ -2,42 +2,23 @@ import cPickle
 import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-import theano
 import lasagne.nonlinearities
 import json
 import os
+from Layer import Layer
+from theano import shared
 
-
-def load_dataset():
-    # f = open('dataLouis.pickle', 'rb')
-    # X = cPickle.load(f)
-    # y = cPickle.load(f)
-    # f.close()
-    X, y = cPickle.load(open(get_relative_filename('dataLouis.pickle'), 'rb'))
-    nb_example = len(X)
-
-    s1 = int(0.6 * nb_example)
-    s2 = int(0.8 * nb_example)
-    X_train, y_train = X[:s1, ], y[:s1]
-    X_val, y_val = X[s1:s2, ], y[s1:s2]
-    X_test, y_test = X[s2:, ], y[s2:]
-
-    return X_train, y_train, X_val, y_val, X_test, y_test
-
-
-def pca_reduction(nb_components):
-    X, y = cPickle.load(open('dataLouis.pickle', 'rb'))
-    ss = StandardScaler()
-    X_train_std = ss.fit_transform(X)
-    pca = PCA(
-        n_components=nb_components)  # http://stats.stackexchange.com/questions/123318/why-are-there-only-n-1-principal-components-for-n-data-points-if-the-number
-    X_train_pca = pca.fit_transform(X_train_std)
-    print(len(X_train_pca[0]))
-    f = open("dataLouis_smaller.pickle", "w")
-    cPickle.dump(X_train_pca, f)
-    cPickle.dump(y, f)
-    f.close()
-    return pca.explained_variance_ratio_
+"""
+Util functions when building neural network using Lasagne librairy
+Functions
+--------
+* get the type of the weights
+* get the weights
+* get the optimizer function
+* get the non linearity
+* get a Theano shared variable
+--------
+"""
 
 
 def get_dtype():
@@ -118,18 +99,6 @@ def get_nonlinearity(name):
         raise 'Unsupported activation function %s' % name
 
 
-def iterate_minibatches(inputs, outputs, batchsize, shuffle=False):
-    if shuffle:
-        indices = np.arange(len(inputs))
-        np.random.shuffle(indices)
-    for start_idx in range(0, len(inputs) - batchsize + 1, batchsize):
-        if shuffle:
-            excerpt = indices[start_idx:start_idx + batchsize]
-        else:
-            excerpt = slice(start_idx, start_idx + batchsize)
-        yield inputs[excerpt], outputs[excerpt]
-
-
 def get_shared(name, n_in, n_out, borrow=True):
     """
     Create a theano.shared 2D array
@@ -143,9 +112,123 @@ def get_shared(name, n_in, n_out, borrow=True):
         Number of columns
     borrow: boolean
         Shared the tensor
-    :return: a theano.shared
+    :return: a shared tensor
     """
-    return theano.shared(get_weights(name, n_in, n_out).astype(get_dtype()), borrow=borrow)
+    return shared(get_weights(name, n_in, n_out).astype(get_dtype()), borrow=borrow)
+
+
+"""
+Util functions to load data set.
+Functions:
+----------
+* load the data set
+* get next batch
+----------
+"""
+
+
+def load_dataset():
+    X, y = cPickle.load(open(get_relative_filename('dataLouis.pickle'), 'rb'))
+    nb_example = len(X)
+
+    s1 = int(0.6 * nb_example)
+    s2 = int(0.8 * nb_example)
+    X_train, y_train = X[:s1, ], y[:s1]
+    X_val, y_val = X[s1:s2, ], y[s1:s2]
+    X_test, y_test = X[s2:, ], y[s2:]
+
+    return X_train, y_train, X_val, y_val, X_test, y_test
+
+
+def iterate_minibatches(inputs, outputs, batchsize, shuffle=False):
+    if shuffle:
+        indices = np.arange(len(inputs))
+        np.random.shuffle(indices)
+    for start_idx in range(0, len(inputs) - batchsize + 1, batchsize):
+        if shuffle:
+            excerpt = indices[start_idx:start_idx + batchsize]
+        else:
+            excerpt = slice(start_idx, start_idx + batchsize)
+        yield inputs[excerpt], outputs[excerpt]
+
+
+"""
+Util functions for spearmint
+Functions:
+----------
+----------
+"""
+
+
+def get_layers(params):
+    # Open file containing the predefined layers parameters
+    json_file = json.load(
+        open(get_relative_filename('data/layers_specific_parameters_value.json'), 'rb'))
+    priors = json_file['layers']
+
+    # Global hyperparameter definition. Used as default value, if not mention anywhere else
+    default_values = json.load(
+        open(get_relative_filename('data/default_parameters_value.json'), 'rb'))
+
+    max_depth = 0
+    # Max depth is the maximum between the number of layers defined in the config file, and the json file
+    max_depth = max(max(len(params[param]) for param in params), len(priors))
+    layers = []
+    indexes = {}
+    # For every layer
+    for depth in xrange(max_depth):
+        # Set default values
+        # Overwritten if defined in the .pb or .json file
+        layer_info = {name: value for name, value in default_values}
+
+        # Set values from the config file
+        # Overwritten if defined in json file
+        for param in params:
+            if len(params[param]) > 0:
+                if not param in indexes:
+                    indexes[param] = 0
+                if indexes[param] < len(params[param]) and indexes[param] != -1:
+                    layer_info[param] = params[param][indexes[param]]
+                    indexes[param] += 1
+
+        # Set values from the json file
+        # Never overwritten
+        for layer in xrange(len(priors)):
+            # Search for the good layer
+            if priors[layer]['layer_nb'] == depth:
+                # Iterate over all parameters set
+                for param in priors[layer]['properties']:
+                    layer_info[param] = priors[layer]['properties'][param]
+                    # The parameter that has been read was not for this layer (a coming one)
+                    if param in indexes:
+                        indexes[param] -= 1
+
+                    if indexes[param] == len(params[param]):
+                        indexes[param] = -1
+        # Set the name
+        layer_info['name'] = 'l' + str(depth)
+        layers.append(Layer(layer_info))
+
+    # For debug purpose
+    for layer in layers:
+        print(str(layer))
+
+    return layers
+
+
+def pca_reduction(nb_components):
+    X, y = cPickle.load(open('dataLouis.pickle', 'rb'))
+    ss = StandardScaler()
+    X_train_std = ss.fit_transform(X)
+    pca = PCA(
+        n_components=nb_components)  # http://stats.stackexchange.com/questions/123318/why-are-there-only-n-1-principal-components-for-n-data-points-if-the-number
+    X_train_pca = pca.fit_transform(X_train_std)
+    print(len(X_train_pca[0]))
+    f = open("dataLouis_smaller.pickle", "w")
+    cPickle.dump(X_train_pca, f)
+    cPickle.dump(y, f)
+    f.close()
+    return pca.explained_variance_ratio_
 
 
 def get_relative_filename(filename):

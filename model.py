@@ -87,40 +87,8 @@ class NN():
 
 def main(job_id=None, params=None):
 
-
-    priors = json.load(
-        open(get_relative_filename('data/layers_specific_parameters_value.json'), 'rb'))
-    priors = priors['layers']
-
-    max_depth = 0
-
-    max_depth = max(max(len(params[param]) for param in params), len(priors))
-    layers = []
-    indexes = {}
-    for depth in xrange(max_depth):
-        layer_info = {}
-        for param in params:
-            if len(params[param]) > 0:
-                if not param in indexes:
-                    indexes[param] = 0
-                if indexes[param] < len(params[param]) and indexes[param] >= 0:
-                    layer_info[param] = params[param][indexes[param]]
-                    indexes[param] += 1
-                else:
-                    indexes[param] = -1
-        for layer in xrange(len(priors)):
-            if priors[layer]['layer_nb'] == depth:
-                for param in priors[layer]['properties']:
-                    layer_info[param] = priors[layer]['properties'][param]
-                    if param in indexes:
-                        indexes[param] -= 1
-
-        layer_info['name'] = 'l' + str(depth)
-
-        layers.append(Layer(layer_info))
-    for layer in layers:
-        print(str(layer))
+    # Get the layers from the config.pb file and the hardcoded value
+    layers = get_layers(params)
     parameters = get_nn_parameters()
     nn = NN(layers, parameters)
     return nn.train()
-
