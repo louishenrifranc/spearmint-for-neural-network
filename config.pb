@@ -5,7 +5,7 @@ name:     "model"
 variable {
     name : "l1_reg"
     type : FLOAT
-    size : 2
+    size : 1
     min : 0
     max : 2
 }
@@ -21,7 +21,7 @@ variable {
 variable {
     name : "dropout"
     type : FLOAT
-    size : 2
+    size : 3
     min : 0
     max : 1
 }

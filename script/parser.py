@@ -26,10 +26,10 @@ class Parser(object):
         """
 
         # Open old config file, and the new file
-        self.config = open(get_relative_filename(old_filename), 'rb')
-        self.new_config = open(get_relative_filename(new_filename), 'wb')
+        self.config = open(get_relative_filename(old_filename, data_folder=''), 'rb')
+        self.new_config = open(get_relative_filename(new_filename, data_folder=''), 'wb')
         # Prior hardcoded information about the layers into this file
-        self.priors = json.load(open(get_relative_filename('data/predefined_values.json'), 'rb'))
+        self.priors = json.load(open(get_relative_filename('predefined_values.json'), 'rb'))
         self.priors = self.priors['layers']
 
         # copy all lines from the config.pb in a buffer
@@ -83,10 +83,11 @@ class Parser(object):
 
         if write_over:
             temp_file = 'temp_file_name'
-            os.rename(get_relative_filename(new_filename), get_relative_filename(temp_file))
-            os.rename(get_relative_filename(old_filename), get_relative_filename(new_filename))
-            os.rename(get_relative_filename(temp_file), get_relative_filename(old_filename))
-            os.remove(get_relative_filename(new_filename))
+            os.rename(get_relative_filename(new_filename, data_folder=''), get_relative_filename(temp_file))
+            os.rename(get_relative_filename(old_filename, data_folder=''),
+                      get_relative_filename(new_filename, data_folder=''))
+            os.rename(get_relative_filename(temp_file), get_relative_filename(old_filename, data_folder=''))
+            os.remove(get_relative_filename(new_filename, data_folder=''))
 
     def modify_line(self, name_var, size, line):
         """
@@ -134,7 +135,6 @@ class Parser(object):
         """
         if name == "":
             raise SyntaxError('For every variable in config.pb, set the name before the size')
-
 
     def create_lines(self):
         self.lines = []

@@ -1,7 +1,5 @@
 import cPickle
 import numpy as np
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
 import lasagne.nonlinearities
 import json
 import os
@@ -78,7 +76,7 @@ def get_optimizer(name, loss, params, lr, decay_lr):
         return lasagne.updates.rmsprop(loss, params, learning_rate=lr, rho=decay_lr)
 
 
-def get_nonlinearity(name):
+def get_non_linearity(name):
     '''
     Get a lasagne nonlinearities object
     Parameters
@@ -125,10 +123,13 @@ Functions:
 * get next batch
 ----------
 """
+def get_relative_filename(filename, data_folder='data/'):
+    filename = data_folder + filename
+    return os.path.join(os.path.dirname(__file__),'..', filename)
 
 
 def load_dataset():
-    X, y = cPickle.load(open(get_relative_filename('dataLouis.pickle'), 'rb'))
+    X, y = cPickle.load(open(get_relative_filename('data.p', data_folder=''), 'rb'))
     nb_example = len(X)
 
     s1 = int(0.6 * nb_example)
@@ -140,15 +141,15 @@ def load_dataset():
     return X_train, y_train, X_val, y_val, X_test, y_test
 
 
-def iterate_minibatches(inputs, outputs, batchsize, shuffle=False):
+def iterate_minibatches(inputs, outputs, batch_size, shuffle=False):
     if shuffle:
         indices = np.arange(len(inputs))
         np.random.shuffle(indices)
-    for start_idx in range(0, len(inputs) - batchsize + 1, batchsize):
+    for start_idx in range(0, len(inputs) - batch_size + 1, batch_size):
         if shuffle:
-            excerpt = indices[start_idx:start_idx + batchsize]
+            excerpt = indices[start_idx:start_idx + batch_size]
         else:
-            excerpt = slice(start_idx, start_idx + batchsize)
+            excerpt = slice(start_idx, start_idx + batch_size)
         yield inputs[excerpt], outputs[excerpt]
 
 
@@ -163,12 +164,12 @@ Functions:
 def get_layers(params):
     # Open file containing the predefined layers parameters
     json_file = json.load(
-        open(get_relative_filename('data/predefined_values.json'), 'rb'))
+        open(get_relative_filename('predefined_values.json'), 'rb'))
     priors = json_file['layers']
 
-    # Global hyperparameter definition. Used as default value, if not mention anywhere else
+    # Global hyper parameter definition. Used as default value, if not mention anywhere else
     default_values = json.load(
-        open(get_relative_filename('data/default_values.json'), 'rb'))
+        open(get_relative_filename('default_values.json'), 'rb'))
 
     max_depth = 0
     # Max depth is the maximum between the number of layers defined in the config file, and the json file
@@ -216,26 +217,9 @@ def get_layers(params):
     return layers
 
 
-def pca_reduction(nb_components):
-    X, y = cPickle.load(open('dataLouis.pickle', 'rb'))
-    ss = StandardScaler()
-    X_train_std = ss.fit_transform(X)
-    pca = PCA(
-        n_components=nb_components)  # http://stats.stackexchange.com/questions/123318/why-are-there-only-n-1-principal-components-for-n-data-points-if-the-number
-    X_train_pca = pca.fit_transform(X_train_std)
-    print(len(X_train_pca[0]))
-    f = open("dataLouis_smaller.pickle", "w")
-    cPickle.dump(X_train_pca, f)
-    cPickle.dump(y, f)
-    f.close()
-    return pca.explained_variance_ratio_
 
 
-def get_relative_filename(filename):
-    return os.path.join(os.path.dirname(__file__), filename)
-
-
-def get_nn_parameters(filename=get_relative_filename('data/global_nn_parameters.json')):
+def get_nn_parameters(filename=get_relative_filename('global_nn_parameters.json')):
     """
     Return neural network attributes in a dic
     Parameters

@@ -3,15 +3,25 @@
     {
       "layer_nb": 0,
       "properties": {
-        "n_hidden": 1000,
-        "batch_norm": "Yes"
+        "n_hidden": 5000,
+        "batch_norm": "Y",
+	"l1_reg": 0.8
       }
     }, 
     {
       "layer_nb": 1,
       "properties": {
+        "n_hidden": 2000,
+        "batch_norm": "N",
+	"l2_reg": 0.4,
+	"l1_reg": 0.1
+      }
+    },
+    {
+      "layer_nb": 2,
+      "properties": {
         "n_hidden": 1,
-        "batch_norm": "No"
+        "batch_norm": "N"
       }
     }
   ]

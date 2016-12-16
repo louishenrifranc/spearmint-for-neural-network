@@ -1,9 +1,6 @@
 from lasagne.layers import DenseLayer, DropoutLayer, batch_norm
 from lasagne.regularization import regularize_layer_params_weighted, l1, l2
 import utils
-import json
-import os
-from utils import get_relative_filename
 
 
 class Layer(object):
@@ -41,14 +38,14 @@ class Layer(object):
     def build_layer(self, model, all_l1_regs, all_l2_regs):
         model = DenseLayer(model,
                            num_units=self.n_hidden,
-                           nonlinearity=utils.get_nonlinearity(self.non_linearity))
+                           nonlinearity=utils.get_non_linearity(self.non_linearity))
         if self.l1_reg != 0:
             all_l1_regs += regularize_layer_params_weighted({model: self.l1_reg}, l1)
 
         if self.l2_reg != 0:
             all_l2_regs += regularize_layer_params_weighted({model: self.l2_reg}, l2)
 
-        if self.batch_norm == "Yes":
+        if self.batch_norm == "Y":
             model = batch_norm(model)
         if self.dropout_p != 0:
             model = DropoutLayer(model, p=self.dropout_p)

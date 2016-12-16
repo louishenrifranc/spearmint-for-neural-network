@@ -4,6 +4,6 @@
   "l1_reg": 0.01,
   "l2_reg": 0.02,
   "dropout": 0.2,
-  "batch_norm": "True"
+  "batch_norm": "N"
 }
 

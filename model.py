@@ -11,26 +11,40 @@ class NN():
                  layers,
                  parameters):
 
+        # Global parameter of the neural network
         self.BATCH_SIZE = parameters['batch_size']
         self.N_IN = parameters['n_in']
         self.N_EPOCH = parameters['n_epochs']
 
+        # Input and output
         self.X = T.fmatrix('x').astype('int8')
         self.Y = T.fvector('y')
         l1, l2 = 0, 0
+
+        # Input layer
         model = InputLayer((self.BATCH_SIZE, self.N_IN), input_var=self.X)
+        # Stack layer
         for layer in layers:
             model, l1, l2 = layer.build_layer(model, l1, l2)
 
+        # Get output for training and testing phase
         Y_hat = get_output(model, deterministic=False)
         Y_test = get_output(model, deterministic=True)
 
+        # Get all weighs
         all_params = get_all_params(model, trainable=True)
+
+        # Cost functions
         cost = T.mean(squared_error(self.Y, T.reshape(Y_hat, (Y_hat.shape[0],))), axis=0)
         cost_test = T.mean(squared_error(self.Y, T.reshape(Y_test, (Y_test.shape[0],))), axis=0)
+
+        # Loss function
         loss = l1 + l2 + cost
+
+        # Optimizer
         updates = get_optimizer(parameters['optimizer'], loss, all_params, parameters['lr'], parameters['decay_lr'])
 
+        # Theano functions
         self.train_fn = function(inputs=[self.X, self.Y], outputs=[loss], updates=updates,
                                  allow_input_downcast=True, on_unused_input='ignore')
         self.test_fn = function(inputs=[self.X, self.Y], outputs=[cost_test],
