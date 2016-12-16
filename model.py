@@ -124,6 +124,3 @@ def main(job_id=None, params=None):
     nn = NN(layers, parameters)
     return nn.train()
 
-
-if __name__ == '__main__':
-    print(main())

@@ -2,7 +2,7 @@
   "optimizer": "adadelta",
   "batch_size": 32,
   "n_in": 66060,
-  "n_epochs": 50,
+  "n_epochs": 100,
   "lr": 0.1,
   "decay_lr": 0.96
 }
