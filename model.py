@@ -58,7 +58,7 @@ class NN():
             train_err = 0
             n_train_batches = 0
             start_time = time.time()
-            for X_batch_train in iterate_minibatches(X_train, y_train, batchsize=self.BATCH_SIZE, shuffle=True):
+            for X_batch_train in iterate_minibatches(X_train, y_train, self.BATCH_SIZE, shuffle=True):
                 err_train = self.train_fn(X_batch_train[0], X_batch_train[1])
                 train_err += err_train[0]
                 n_train_batches += 1

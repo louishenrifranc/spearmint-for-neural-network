@@ -106,7 +106,7 @@ class Parser(object):
             # If the hyperparameter has an entry in the json file,, then spearmint don't need to look after it
             if name_var in layer['properties']:
                 nb_var_predefined += 1
-        if line[-1] == '\n':
+        while not line[-1].isdigit():
             line = line[:-1]
         nb_elements_power_of_ten = len(line.split()[-1])
         line = line[:-(nb_elements_power_of_ten)] + str(size - nb_var_predefined)
